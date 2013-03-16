@@ -62,7 +62,7 @@ def main():
     # number of segment in a session
     num_seg = 0
     wr = csv.writer(outfile, delimiter='\t')
-    for line in fileReader(fileinput.FileInput()):
+    for line in fileReader(fileinput.FileInput(openhook=fileinput.hook_compressed)):
         # session identifier: server, conn_num
         s = line[10], line[9]
         # epoch of segment arrival
