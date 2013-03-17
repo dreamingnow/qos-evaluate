@@ -23,10 +23,10 @@ while [[ "$CURDATE" < "$ENDDATE" ]]
 do
     echo Processing $CURDATE
     MONTHSTR=`date -d "$CURDATE" +%Y%m`
-    DATAFILE="$DATAPATH"/access.log."$1".$SERVER.seg.gz
+    DATAFILE="$DATAPATH"/access.log."$CURDATE".$SERVER.seg.gz
     zcat $DATAFILE |awk '$12 ~ /Apple/ {print $0;}' >> filter.tmp
 
     CURDATE=`date -d "$CURDATE +1 days" +%Y%m%d`
 done
 echo Sorting...
-sort -t\t -k11 -k10n -k1n filter.tmp | gzip > "dat_${SERVER}_${STARTDATE}_${ENDDATE}.gz"
+sort -t$'\t' -k11,11 -k10n,10 -k1n,1 filter.tmp | gzip > "dat_${SERVER}_${STARTDATE}_${ENDDATE}.gz"
