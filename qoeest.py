@@ -9,6 +9,9 @@ import csv
 import sys
 
 SEGLEN = 10
+S_BUF = 0
+S_PLAY = 1
+BUF_THRES = 3
 
 
 def fileReader(infile):
@@ -48,19 +51,24 @@ def main():
     # session info
     sess_info = []
     # session start epoch
-    epoch_sess_start = 0
+    #epoch_sess_start = 0
+    # length of buffered video
+    len_buffered = 0
     # length of downloaded video
-    len_downloaded = 0
+    #len_downloaded = 0
     # length of freezing
     len_freezing = 0
     # length of time elapsed
-    len_elapsed = 0
+    #len_elapsed = 0
     # number of stuck
     num_stuck = 0
     # list of segment download time
     seg_down_time = []
     # number of segment in a session
     num_seg = 0
+    # working status of the client, can be: S_BUF / S_PLAY
+    status = S_BUF
+    last_arrival = 0
     wr = csv.writer(outfile, delimiter='\t')
     for line in fileReader(fileinput.FileInput(openhook=fileinput.hook_compressed)):
         # session identifier: server, conn_num
@@ -70,26 +78,41 @@ def main():
         # segment download time
         d = line[1]
         if s != cur_sess:
+            # Jump to new session
             if cur_sess is not None:
-                # output session result
+                # output result of last session
+                num_seg = len(seg_down_time)
                 wr.writerow(list(cur_sess) + sess_info +
                             [num_seg, sum(seg_down_time) / num_seg, num_stuck])
+            # initialize new session
             cur_sess = s
             sess_info = [line[5], line[8], line[2], line[11]]
-            epoch_sess_start = t
-            len_downloaded = SEGLEN
-            len_freezing = 0
+            status = S_BUF
+            last_arrival = t
+            #epoch_sess_start = t
+            len_buffered = SEGLEN
             seg_down_time = [d]
-            num_seg = 1
+            #len_downloaded = SEGLEN
+            len_freezing = 0
             num_stuck = 0
         else:
-            len_downloaded += SEGLEN
-            len_elapsed = t - epoch_sess_start - len_freezing
+            #len_downloaded += SEGLEN
+            if status == S_PLAY:
+                len_buffered -= t - last_arrival
+                # playback consumption of buffer
+                if len_buffered < 0:
+                    num_stuck += 1
+                    len_freezing += -len_buffered
+                    status = S_BUF
+                    len_buffered = 0
+            else:
+                # status: S_BUF
+                if len_buffered >= SEGLEN * BUF_THRES:
+                    status = S_PLAY
+
+            len_buffered += SEGLEN
             seg_down_time.append(d)
-            num_seg += 1
-            if len_elapsed > len_downloaded:
-                len_freezing += len_elapsed - len_downloaded
-                num_stuck += 1
+            last_arrival = t
 
 
 if __name__ == '__main__':
