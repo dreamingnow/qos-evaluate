@@ -40,7 +40,7 @@ def fileReader(infile):
         line[9] = int(line[9])
         yield line
     # End of the stream
-    yield [None] * 12
+    yield [0] * 2 + [None] * 10
 
 
 def main():
@@ -69,6 +69,7 @@ def main():
     # working status of the client, can be: S_BUF / S_PLAY
     status = S_BUF
     last_arrival = 0
+    last_request = 0
     wr = csv.writer(outfile, delimiter='\t')
     for line in fileReader(fileinput.FileInput(openhook=fileinput.hook_compressed)):
         # session identifier: server, conn_num
@@ -77,6 +78,8 @@ def main():
         t = line[0]
         # segment download time
         d = line[1]
+        # request time
+        r = t - d
         if s != cur_sess:
             # Jump to new session
             if cur_sess is not None:
@@ -89,6 +92,7 @@ def main():
             sess_info = [line[5], line[8], line[2], line[11]]
             status = S_BUF
             last_arrival = t
+            last_request = r
             #epoch_sess_start = t
             len_buffered = SEGLEN
             seg_down_time = [d]
@@ -101,8 +105,11 @@ def main():
                 len_buffered -= t - last_arrival
                 # playback consumption of buffer
                 if len_buffered < 0:
-                    num_stuck += 1
-                    len_freezing += -len_buffered
+                    if d > SEGLEN or r - last_request < 0.5 * SEGLEN:
+                        # check whether caused by download timeout
+                        # the user may also pause the video by himself
+                        num_stuck += 1
+                        len_freezing += -len_buffered
                     status = S_BUF
                     len_buffered = 0
             else:
@@ -113,6 +120,7 @@ def main():
             len_buffered += SEGLEN
             seg_down_time.append(d)
             last_arrival = t
+            last_request = r
 
 
 if __name__ == '__main__':
