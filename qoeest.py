@@ -8,10 +8,13 @@ import fileinput
 import csv
 import sys
 
+#SEGLEN = 10.41
 SEGLEN = 10
 S_BUF = 0
 S_PLAY = 1
 BUF_THRES = 3
+# whether distinguish pause: True = DO NOT check
+NOT_CHECK_PAUSE = True
 
 
 def fileReader(infile):
@@ -40,7 +43,7 @@ def fileReader(infile):
         line[9] = int(line[9])
         yield line
     # End of the stream
-    yield [None] * 12
+    yield [0] * 2 + [None] * 10
 
 
 def main():
@@ -66,9 +69,12 @@ def main():
     seg_down_time = []
     # number of segment in a session
     num_seg = 0
+    # number of segment in a session, EXCLUDING buffering chunks
+    num_seg_play = 0
     # working status of the client, can be: S_BUF / S_PLAY
     status = S_BUF
     last_arrival = 0
+    last_request = 0
     wr = csv.writer(outfile, delimiter='\t')
     for line in fileReader(fileinput.FileInput(openhook=fileinput.hook_compressed)):
         # session identifier: server, conn_num
@@ -77,34 +83,43 @@ def main():
         t = line[0]
         # segment download time
         d = line[1]
+        # request time
+        r = t - d
         if s != cur_sess:
             # Jump to new session
             if cur_sess is not None:
                 # output result of last session
                 num_seg = len(seg_down_time)
                 wr.writerow(list(cur_sess) + sess_info +
-                            [num_seg, sum(seg_down_time) / num_seg, num_stuck])
+                            [num_seg, num_seg_play,
+                             sum(seg_down_time) / num_seg, num_stuck])
             # initialize new session
             cur_sess = s
             sess_info = [line[5], line[8], line[2], line[11]]
             status = S_BUF
             last_arrival = t
+            last_request = r
             #epoch_sess_start = t
             len_buffered = SEGLEN
             seg_down_time = [d]
             #len_downloaded = SEGLEN
             len_freezing = 0
             num_stuck = 0
+            num_seg_play = 0
         else:
             #len_downloaded += SEGLEN
             if status == S_PLAY:
                 len_buffered -= t - last_arrival
                 # playback consumption of buffer
                 if len_buffered < 0:
-                    num_stuck += 1
-                    len_freezing += -len_buffered
+                    if NOT_CHECK_PAUSE or d > SEGLEN or r - last_request < 0.5 * SEGLEN:
+                        # check whether caused by download timeout
+                        # the user may also pause the video by himself
+                        num_stuck += 1
+                        len_freezing += -len_buffered
                     status = S_BUF
-                    len_buffered = 0
+                    len_buffered = SEGLEN
+                num_seg_play += 1
             else:
                 # status: S_BUF
                 if len_buffered >= SEGLEN * BUF_THRES:
@@ -113,6 +128,7 @@ def main():
             len_buffered += SEGLEN
             seg_down_time.append(d)
             last_arrival = t
+            last_request = r
 
 
 if __name__ == '__main__':
