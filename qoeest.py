@@ -109,13 +109,13 @@ def main():
                 len_buffered -= t - last_arrival
                 # playback consumption of buffer
                 if len_buffered < 0:
-                    # if d > SEGLEN or r - last_request < 0.5 * SEGLEN:
+                    #if d > SEGLEN or r - last_request < 0.5 * SEGLEN:
                         # check whether caused by download timeout
                         # the user may also pause the video by himself
                     num_stuck += 1
                     len_freezing += -len_buffered
                     status = S_BUF
-                    len_buffered = 0
+                    len_buffered = SEGLEN
                 num_seg_play += 1
             else:
                 # status: S_BUF
