@@ -8,10 +8,13 @@ import fileinput
 import csv
 import sys
 
+#SEGLEN = 10.41
 SEGLEN = 10
 S_BUF = 0
 S_PLAY = 1
 BUF_THRES = 3
+# whether distinguish pause: True = DO NOT check
+NOT_CHECK_PAUSE = True
 
 
 def fileReader(infile):
@@ -109,11 +112,11 @@ def main():
                 len_buffered -= t - last_arrival
                 # playback consumption of buffer
                 if len_buffered < 0:
-                    #if d > SEGLEN or r - last_request < 0.5 * SEGLEN:
+                    if NOT_CHECK_PAUSE or d > SEGLEN or r - last_request < 0.5 * SEGLEN:
                         # check whether caused by download timeout
                         # the user may also pause the video by himself
-                    num_stuck += 1
-                    len_freezing += -len_buffered
+                        num_stuck += 1
+                        len_freezing += -len_buffered
                     status = S_BUF
                     len_buffered = SEGLEN
                 num_seg_play += 1
