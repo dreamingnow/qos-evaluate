@@ -66,6 +66,8 @@ def main():
     seg_down_time = []
     # number of segment in a session
     num_seg = 0
+    # number of segment in a session, EXCLUDING buffering chunks
+    num_seg_play = 0
     # working status of the client, can be: S_BUF / S_PLAY
     status = S_BUF
     last_arrival = 0
@@ -86,7 +88,8 @@ def main():
                 # output result of last session
                 num_seg = len(seg_down_time)
                 wr.writerow(list(cur_sess) + sess_info +
-                            [num_seg, sum(seg_down_time) / num_seg, num_stuck])
+                            [num_seg, num_seg_play,
+                             sum(seg_down_time) / num_seg, num_stuck])
             # initialize new session
             cur_sess = s
             sess_info = [line[5], line[8], line[2], line[11]]
@@ -99,19 +102,21 @@ def main():
             #len_downloaded = SEGLEN
             len_freezing = 0
             num_stuck = 0
+            num_seg_play = 0
         else:
             #len_downloaded += SEGLEN
             if status == S_PLAY:
                 len_buffered -= t - last_arrival
                 # playback consumption of buffer
                 if len_buffered < 0:
-                    if d > SEGLEN or r - last_request < 0.5 * SEGLEN:
+                    # if d > SEGLEN or r - last_request < 0.5 * SEGLEN:
                         # check whether caused by download timeout
                         # the user may also pause the video by himself
-                        num_stuck += 1
-                        len_freezing += -len_buffered
+                    num_stuck += 1
+                    len_freezing += -len_buffered
                     status = S_BUF
                     len_buffered = 0
+                num_seg_play += 1
             else:
                 # status: S_BUF
                 if len_buffered >= SEGLEN * BUF_THRES:
