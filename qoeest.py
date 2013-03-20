@@ -87,7 +87,7 @@ def main():
             outfile = gzip.open(options.output_filename, 'wb')
         else:
             outfile = open(options.output_filename, 'wb')
-        desc_file = open(options.output_filename + ".desc")
+        desc_file = open(options.output_filename + '.desc', 'wb')
         desc_file.write('not_check_pause=%s', NOT_CHECK_PAUSE)
         desc_file.write('segment_length=%d', SEGLEN)
         desc_file.write('buffer_threshold=%.2f', BUF_THRES)
