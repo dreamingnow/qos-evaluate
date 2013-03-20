@@ -7,12 +7,19 @@
 import fileinput
 import csv
 import sys
+import optparse
+import gzip
 
-#SEGLEN = 10.41
-SEGLEN = 10
+
+# status constant
 S_BUF = 0
 S_PLAY = 1
+
+
+# parameters
 BUF_THRES = 3
+#SEGLEN = 10.41
+SEGLEN = 10
 # whether distinguish pause: True = DO NOT check
 NOT_CHECK_PAUSE = True
 
@@ -49,7 +56,38 @@ def fileReader(infile):
 def main():
     """main
     """
-    outfile = sys.stdout
+    parser = optparse.OptionParser()
+    parser.set_usage('%prog [options] FILES')
+    parser.add_option('-o', '--output', action='store',
+                      type='string', dest='output_filename',
+                      help='Output file')
+    parser.add_option('-z', '--gzip', action='store_true',
+                      dest='gzip',
+                      help='Gzip output file, only effective when output file is specified')
+    parser.add_option('-c', '--chunk-length', action='store',
+                      type='float', dest='seglen', default=10,
+                      help='Segment length')
+    parser.add_option('-b', '--buffer-threshold', action='store',
+                      type='int', dest='bufthres', default=1,
+                      help='Buffering threshold')
+    parser.add_option('-p', '--pause-check', action='store_false',
+                      dest='chkpause', default=True,
+                      help='Check pause')
+    (options, args) = parser.parse_args()
+    if len(args) == 0:
+        parser.error('Input file needed.')
+    if options.output_filename is None:
+        outfile = sys.stdout
+    elif options.gzip:
+        outfile = gzip.open(options.output_filename, 'wb')
+    else:
+        outfile = open(options.output_filename, 'wb')
+    NOT_CHECK_PAUSE = options.chkpause
+    SEGLEN = options.seglen
+    BUF_THRES = options.bufthres
+
+    infile = fileinput.FileInput(files=args, openhook=fileinput.hook_compressed)
+
     cur_sess = None
     # session info
     sess_info = []
@@ -76,7 +114,7 @@ def main():
     last_arrival = 0
     last_request = 0
     wr = csv.writer(outfile, delimiter='\t')
-    for line in fileReader(fileinput.FileInput(openhook=fileinput.hook_compressed)):
+    for line in fileReader(infile):
         # session identifier: server, conn_num
         s = line[10], line[9]
         # epoch of segment arrival
