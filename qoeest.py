@@ -97,6 +97,10 @@ def main():
     infile = fileinput.FileInput(files=args, openhook=fileinput.hook_compressed)
 
     tos = time.time()
+    sys.stderr.write('[%s] Start: \n' % (time.asctime(), ))
+    sys.stderr.write('not_check_pause: %s\n' % NOT_CHECK_PAUSE)
+    sys.stderr.write('segment_length: %.2f\n' % SEGLEN)
+    sys.stderr.write('buffer_threshold: %d\n' % BUF_THRES)
 
     cur_sess = None
     # session info
