@@ -27,19 +27,29 @@ It will produce preprocessed data file `dat_<server_name>_<start_date>_<end_date
 Estimate QoE of sessions
 ------------------------
 
-`python qoeest.py <preprocessed_dat_file> > <output_file>`
+run `qoeest.py --help` to get the usage.
 
-The format of preprocessed dat file produced by `filsort.sh` should be a sorted segment download log, which has the same 12 columns as the original seg file produced by nginx.
+The format of input preprocessed dat file produced by `filsort.sh` should be a sorted segment download log, which has the same 12 columns as the original seg file produced by nginx.
 
-`qoeest.py` outputs the result to `stdout`.  So we can redirect output to a file.  `runQoeest.sh` will output the result to a gzipped file with prefix `qoe_`.
+The file `jobs.py` automates the processing.
 
-`./runQoeest.sh <preprocessed_dat_file>`
+Output
+------
 
-The file `batch.sh` automates the processing and move the output file to specified directory.
+The output of the `qoeest.py` contains:
 
+1. server
+2. connection sequence
+3. channel
+4. bitrate
+5. IP
+6. start time (request time of the first chunk)
+7. end time (finish time of the last chunk)
+8. total segments
+9. number of segments excluding additional segments when buffering
+10. average segment download time
+11. number of stuck
+12. buffering time
+13. playback time
 
-
-
-
-
-
+Each line represents a session.
