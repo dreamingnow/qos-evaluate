@@ -76,15 +76,22 @@ def main():
     (options, args) = parser.parse_args()
     if len(args) == 0:
         parser.error('Input file needed.')
-    if options.output_filename is None:
-        outfile = sys.stdout
-    elif options.gzip:
-        outfile = gzip.open(options.output_filename, 'wb')
-    else:
-        outfile = open(options.output_filename, 'wb')
+
     NOT_CHECK_PAUSE = options.chkpause
     SEGLEN = options.seglen
     BUF_THRES = options.bufthres
+    if options.output_filename is None:
+        outfile = sys.stdout
+    else:
+        if options.gzip:
+            outfile = gzip.open(options.output_filename, 'wb')
+        else:
+            outfile = open(options.output_filename, 'wb')
+        desc_file = open(options.output_filename + ".desc")
+        desc_file.write('not_check_pause=%s', NOT_CHECK_PAUSE)
+        desc_file.write('segment_length=%d', SEGLEN)
+        desc_file.write('buffer_threshold=%.2f', BUF_THRES)
+        desc_file.close()
 
     infile = fileinput.FileInput(files=args, openhook=fileinput.hook_compressed)
 
