@@ -185,7 +185,7 @@ def main():
         last_request = r
 
     toe = time.time()
-    sys.stdout.write('\n[%s] Done: %.3fs.\n' % (time.asctime(), toe - tos))
+    sys.stderr.write('[%s] Done: %.3fs.\n' % (time.asctime(), toe - tos))
 
 if __name__ == '__main__':
     main()
