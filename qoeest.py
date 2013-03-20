@@ -9,6 +9,7 @@ import csv
 import sys
 import optparse
 import gzip
+import time
 
 
 # status constant
@@ -89,11 +90,13 @@ def main():
             outfile = open(options.output_filename, 'wb')
         desc_file = open(options.output_filename + '.desc', 'wb')
         desc_file.write('not_check_pause=%s\n' % NOT_CHECK_PAUSE)
-        desc_file.write('segment_length=%d\n' % SEGLEN)
-        desc_file.write('buffer_threshold=%.2f\n' % BUF_THRES)
+        desc_file.write('segment_length=%.2f\n' % SEGLEN)
+        desc_file.write('buffer_threshold=%d\n' % BUF_THRES)
         desc_file.close()
 
     infile = fileinput.FileInput(files=args, openhook=fileinput.hook_compressed)
+
+    tos = time.time()
 
     cur_sess = None
     # session info
@@ -181,6 +184,8 @@ def main():
         last_arrival = t
         last_request = r
 
+    toe = time.time()
+    sys.stdout.write('\n[%s] Done: %.3fs.\n' % (time.asctime(), toe - tos))
 
 if __name__ == '__main__':
     main()
