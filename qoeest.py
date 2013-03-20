@@ -175,7 +175,7 @@ def main():
                     len_freezing += -len_buffered
                     len_playback += t - last_arrival - (-len_buffered)
                 status = S_BUF
-                len_buffered = SEGLEN
+                len_buffered = 0
             num_seg_play += 1
 
         len_buffered += SEGLEN
