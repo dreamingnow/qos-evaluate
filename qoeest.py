@@ -125,7 +125,7 @@ def main():
     status = S_BUF
     # time cursor, pointing to the last epoch processed
     epoch_processed = 0
-    last_request = 0
+    #last_request = 0
     is_init_buf = True
     wr = csv.writer(outfile, delimiter='\t')
     for line in fileReader(infile):
@@ -179,12 +179,12 @@ def main():
 
         len_buffered += SEGLEN
         if status == S_BUF:
-            if len_buffered >= SEGLEN * BUF_THRES:
-                status = S_PLAY
-                is_init_buf = False
             #len_freezing += t - epoch_processed
             if not is_init_buf:
                 len_freezing += min(d, t - epoch_processed)
+            if len_buffered >= SEGLEN * BUF_THRES:
+                status = S_PLAY
+                is_init_buf = False
 
         seg_down_time.append(d)
         epoch_processed = t
