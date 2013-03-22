@@ -109,8 +109,6 @@ def main():
     #epoch_sess_start = 0
     # length of buffered video
     len_buffered = 0
-    # length of downloaded video
-    #len_downloaded = 0
     # length of freezing
     len_freezing = 0
     # length of time used for playback
@@ -128,6 +126,7 @@ def main():
     # time cursor, pointing to the last epoch processed
     epoch_processed = 0
     last_request = 0
+    is_init_buf = True
     wr = csv.writer(outfile, delimiter='\t')
     for line in fileReader(infile):
         # session identifier: server, conn_num
@@ -150,6 +149,7 @@ def main():
             cur_sess = s
             sess_info = [line[5], line[8], line[2], r]
             status = S_BUF
+            is_init_buf = True
             # for the new session, set time cursor to the epoch of requesting
             # the first chunk, the beginning of the whole session
             epoch_processed = r
@@ -164,7 +164,7 @@ def main():
             len_buffered -= t - epoch_processed
             # playback consumption of buffer
             if len_buffered < 0:
-                if NOT_CHECK_PAUSE or d > SEGLEN or r - last_request < 0.5 * SEGLEN:
+                if NOT_CHECK_PAUSE or d > SEGLEN or r - epoch_processed < 0.5 * SEGLEN:
                     # check whether caused by download timeout
                     # the user may also pause the video by himself
                     num_stuck += 1
@@ -181,11 +181,14 @@ def main():
         if status == S_BUF:
             if len_buffered >= SEGLEN * BUF_THRES:
                 status = S_PLAY
-            len_freezing += t - epoch_processed
+                is_init_buf = False
+            #len_freezing += t - epoch_processed
+            if not is_init_buf:
+                len_freezing += min(d, t - epoch_processed)
 
         seg_down_time.append(d)
         epoch_processed = t
-        last_request = r
+        #last_request = r
 
     toe = time.time()
     sys.stderr.write('[%s] Done: %.3fs.\n' % (time.asctime(), toe - tos))
