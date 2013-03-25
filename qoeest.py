@@ -74,6 +74,9 @@ def main():
     parser.add_option('-p', '--pause-check', action='store_false',
                       dest='chkpause', default=True,
                       help='Check pause')
+    parser.add_option('-m', '--probe-mode', action='store_true',
+                      dest='probe_mode', default=False,
+                      help='Probe mode')
     (options, args) = parser.parse_args()
     if len(args) == 0:
         parser.error('Input file needed.')
@@ -81,6 +84,7 @@ def main():
     NOT_CHECK_PAUSE = options.chkpause
     SEGLEN = options.seglen
     BUF_THRES = options.bufthres
+    is_probe = options.probe_mode
     if options.output_filename is None:
         outfile = sys.stdout
     else:
@@ -127,6 +131,7 @@ def main():
     epoch_processed = 0
     #last_request = 0
     is_init_buf = True
+    is_first = True
     wr = csv.writer(outfile, delimiter='\t')
     for line in fileReader(infile):
         # session identifier: server, conn_num
@@ -139,7 +144,7 @@ def main():
         r = t - d
         if s != cur_sess:
             # Jump to new session
-            if cur_sess is not None:
+            if cur_sess is not None and not is_probe:
                 # output result of last session
                 num_seg = len(seg_down_time)
                 wr.writerow(list(cur_sess) + sess_info +
@@ -172,6 +177,7 @@ def main():
                 # set epoch_processed to when the buffer depletes
                 epoch_processed = t - (-len_buffered)
                 status = S_BUF
+                is_first = True
                 len_buffered = 0
             else:
                 len_playback += t - epoch_processed
@@ -181,11 +187,15 @@ def main():
         if status == S_BUF:
             #len_freezing += t - epoch_processed
             if not is_init_buf:
-                len_freezing += min(d, t - epoch_processed)
+                if is_first:
+                    len_freezing += min(d, t - epoch_processed)
+                    is_first = False
             if len_buffered >= SEGLEN * BUF_THRES:
                 status = S_PLAY
                 is_init_buf = False
 
+        if is_probe and t != 0:
+            wr.writerow([num_stuck, len_buffered, t - d] + line[0:2] + line[5:11])
         seg_down_time.append(d)
         epoch_processed = t
         #last_request = r
