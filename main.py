@@ -10,6 +10,7 @@ import gzip
 import time
 from MobTVWorkFlow import MobTVWorkFlow
 
+
 def fileReader(infile):
     """read data from tab delimitted files
     """
@@ -60,27 +61,30 @@ def main():
                       dest='chkpause', default=True,
                       help='Check pause')
     (options, args) = parser.parse_args()
-    if len(args) == 0:
-        parser.error('Input file needed.')
 
     NOT_CHECK_PAUSE = options.chkpause
     SEGLEN = options.seglen
     BUF_THRES = options.bufthres
-    
+
     if options.output_filename is None:
         outfile = sys.stdout
     else:
         if options.gzip:
             outfile = gzip.open(options.output_filename, 'wb')
+            freeze_file = gzip.open('st_' + options.output_filename, 'wb')
         else:
             outfile = open(options.output_filename, 'wb')
+            freeze_file = open('st_' + options.output_filename, 'wb')
         desc_file = open(options.output_filename + '.desc', 'wb')
         desc_file.write('not_check_pause=%s\n' % NOT_CHECK_PAUSE)
         desc_file.write('segment_length=%.2f\n' % SEGLEN)
         desc_file.write('buffer_threshold=%d\n' % BUF_THRES)
         desc_file.close()
 
-    infile = fileinput.FileInput(files=args, openhook=fileinput.hook_compressed)
+    if len(args) == 0:
+        infile = fileinput.FileInput(files=[])
+    else:
+        infile = fileinput.FileInput(files=args, openhook=fileinput.hook_compressed)
 
     tos = time.time()
     sys.stderr.write('[%s] Start: \n' % (time.asctime(), ))
@@ -93,15 +97,15 @@ def main():
         s = line[10], line[9]
         if s not in results:
             results[s] = MobTVWorkFlow(NOT_CHECK_PAUSE, SEGLEN, BUF_THRES)
-        results[s].append(line)
-    
+        # epoch_stuck is -1 if there is no stuck
+        epoch_stuck = results[s].append(line)
+        if epoch_stuck > 0:
+            freeze_file.write('%f\n' % epoch_stuck)
     wr = csv.writer(outfile, delimiter='\t')
     for sess in results:
         wr.writerow(results[sess].stat())
-    
     toe = time.time()
     sys.stderr.write('[%s] Done: %.3fs.\n' % (time.asctime(), toe - tos))
-        
-        
+
 if __name__ == '__main__':
     main()

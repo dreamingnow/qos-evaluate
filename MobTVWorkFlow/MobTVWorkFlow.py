@@ -47,6 +47,7 @@ class MobTVWorkFlow:
     #----------------------------------------------------------------------
     def append(self, line):
         """append new record"""
+        epoch_stuck = -1
         # epoch of segment arrival
         t = line[0]
         # segment download time
@@ -73,16 +74,19 @@ class MobTVWorkFlow:
             self.len_buffered -= t - self.epoch_processed
             # playback consumption of buffer
             if self.len_buffered < 0:
-                if self.NOT_CHECK_PAUSE or d > self.SEGLEN or r - self.epoch_processed < 0.5 * self.SEGLEN:
-                    # check whether caused by download timeout
-                    # the user may also pause the video by himself
-                    self.num_stuck += 1
+                
                 self.len_playback += t - self.epoch_processed - (-self.len_buffered)
                 # set epoch_processed to when the buffer depletes
                 self.epoch_processed = t - (-self.len_buffered)
+                
                 self.status = MobTVWorkFlow.S_BUF
                 self.is_first = True
                 self.len_buffered = 0
+                if self.NOT_CHECK_PAUSE or d > self.SEGLEN or r - self.epoch_processed < 0.5 * self.SEGLEN:
+                    # check whether caused by download timeout
+                    # the user may also pause the video by himself
+                    epoch_stuck = self.epoch_processed
+                    self.num_stuck += 1
             else:
                 self.len_playback += t - self.epoch_processed
             self.num_seg_play += 1
@@ -101,6 +105,7 @@ class MobTVWorkFlow:
         self.seg_down_time.append(d)
         self.epoch_processed = t
         #last_request = r
+        return epoch_stuck
 
     def stat(self):
         """output results as a tab delimited line
