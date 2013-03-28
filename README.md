@@ -43,13 +43,14 @@ The output of the `qoeest.py` contains:
 3. channel
 4. bitrate
 5. IP
-6. start time (request time of the first chunk)
-7. end time (finish time of the last chunk)
-8. total segments
-9. number of segments excluding additional segments when buffering
-10. average segment download time
-11. number of stuck
-12. buffering time
-13. playback time
+6. OS type: an/ios
+7. start time (request time of the first chunk)
+8. end time (finish time of the last chunk)
+9. total segments
+10. number of segments excluding additional segments when buffering
+11. average segment download time
+12. number of stuck
+13. buffering time
+14. playback time
 
 Each line represents a session.

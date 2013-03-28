@@ -21,7 +21,7 @@ class MobTVWorkFlow:
         self.BUF_THRES = bufthres
         self.cur_sess = None
         # session info
-        self.sess_info = None
+        self.sess_info = []
         # length of buffered video
         self.len_buffered = 0
         # length of freezing
@@ -57,7 +57,7 @@ class MobTVWorkFlow:
         if self.cur_sess is None:
             # initialize the new session
             self.cur_sess = line[10], line[9]
-            self.sess_info = [line[5], line[8], line[2], r]
+            self.sess_info = [line[5], line[8], line[2], self.getos(line[11]), r]
             self.status = MobTVWorkFlow.S_BUF
             self.is_init_buf = True
             # for the new session, set time cursor to the epoch of requesting
@@ -74,11 +74,11 @@ class MobTVWorkFlow:
             self.len_buffered -= t - self.epoch_processed
             # playback consumption of buffer
             if self.len_buffered < 0:
-                
+
                 self.len_playback += t - self.epoch_processed - (-self.len_buffered)
                 # set epoch_processed to when the buffer depletes
                 self.epoch_processed = t - (-self.len_buffered)
-                
+
                 self.status = MobTVWorkFlow.S_BUF
                 self.is_first = True
                 self.len_buffered = 0
@@ -107,6 +107,18 @@ class MobTVWorkFlow:
         #last_request = r
         return epoch_stuck
 
+    def getos(self, ua):
+        """Get OS type from user agent string
+
+        :ua: @todo
+        :returns: @todo
+
+        """
+        if ua.find('Apple') >= 0:
+            return 'ios'
+        else:
+            return 'an'
+
     def stat(self):
         """output results as a tab delimited line
 
@@ -114,10 +126,10 @@ class MobTVWorkFlow:
         """
         num_seg = len(self.seg_down_time)
         return list(self.cur_sess) + self.sess_info + \
-               [self.epoch_processed, 
-                num_seg, 
+            [self.epoch_processed,
+                num_seg,
                 self.num_seg_play,
-                sum(self.seg_down_time) / num_seg, 
-                self.num_stuck, 
-                self.len_freezing, 
+                sum(self.seg_down_time) / num_seg,
+                self.num_stuck,
+                self.len_freezing,
                 self.len_playback]
