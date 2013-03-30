@@ -57,7 +57,7 @@ class MobTVWorkFlow:
         if self.cur_sess is None:
             # initialize the new session
             self.cur_sess = line[10], line[9]
-            self.sess_info = [line[5], line[8], line[2], self.getos(line[11]), r]
+            self.sess_info = [line[5], line[8], line[2], line[11], r]
             self.status = MobTVWorkFlow.S_BUF
             self.is_init_buf = True
             # for the new session, set time cursor to the epoch of requesting
