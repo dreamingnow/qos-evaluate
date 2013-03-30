@@ -37,7 +37,7 @@ def fileReader(infile):
         line[9] = int(line[9])
         yield line
     # End of the stream
-    yield [0] * 2 + [None] * 10
+    # yield [0] * 2 + [None] * 9 + ['']
 
 
 def main():
@@ -100,7 +100,7 @@ def main():
         # epoch_stuck is -1 if there is no stuck
         epoch_stuck = results[s].append(line)
         if epoch_stuck > 0:
-            freeze_file.write('%f\n' % epoch_stuck)
+            freeze_file.write('%s\t%d\t%f\n' % (line[10], line[9], epoch_stuck))
     wr = csv.writer(outfile, delimiter='\t')
     for sess in results:
         wr.writerow(results[sess].stat())
