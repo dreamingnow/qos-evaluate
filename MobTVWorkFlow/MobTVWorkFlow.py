@@ -42,9 +42,9 @@ class MobTVWorkFlow:
         self.epoch_processed = 0
         #last_request = 0
         # epoch of stuck for the last time
-        self.epoch_last_stuck = 0
+        self.epoch_last_stuck = None
         # epoch of revive from stuck state for the last time
-        self.epoch_last_resume = 0
+        self.epoch_last_resume = None
         self.is_init_buf = True
         self.is_first = True
 
@@ -134,6 +134,11 @@ class MobTVWorkFlow:
         :returns: a list of session info
         """
         num_seg = len(self.seg_down_time)
+        # use \N for NULL for mysql import
+        if self.epoch_last_stuck is None:
+            self.epoch_last_stuck = r'\N'
+        if self.epoch_last_resume is None:
+            self.epoch_last_resume = r'\N'
         return list(self.cur_sess) + self.sess_info + \
             [self.epoch_processed,
                 num_seg,
