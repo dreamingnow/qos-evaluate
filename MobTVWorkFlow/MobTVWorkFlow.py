@@ -108,8 +108,10 @@ class MobTVWorkFlow:
                     self.is_first = False
             if self.len_buffered >= self.SEGLEN * self.BUF_THRES:
                 self.status = MobTVWorkFlow.S_PLAY
-                self.epoch_last_resume = t
-                self.is_init_buf = False
+                if not self.is_first:
+                    self.epoch_last_resume = t
+                else:
+                    self.is_init_buf = False
 
         self.seg_down_time.append(d)
         self.epoch_processed = t
