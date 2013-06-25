@@ -69,7 +69,7 @@ def main():
                       type='float', dest='seglen', default=10,
                       help='Segment length')
     parser.add_option('-b', '--buffer-threshold', action='store',
-                      type='int', dest='bufthres', default=1,
+                      type='int', dest='bufthres', default=3,
                       help='Buffering threshold')
     parser.add_option('-p', '--pause-check', action='store_false',
                       dest='chkpause', default=True,
