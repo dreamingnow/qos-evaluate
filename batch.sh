@@ -12,7 +12,7 @@ echo Import raw data
 cat "$SEG_FILE_LIST" | while read SEG_FILE
 do
 	echo $SEG_FILE
-	./preimport.sh $1 $PIPE
+	./preimport.sh $SEG_FILE $DB_NAME $PIPE
 done
 echo Generating QoE data from raw data
 ./run_qoe_db.sh $DB_NAME $TMP_DAT
