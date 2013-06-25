@@ -20,7 +20,7 @@ class MobTVWorkFlow:
         self.SEGLEN = seglen
         self.BUF_THRES = bufthres
         self.cur_sess = None
-        # session info
+        # session info [channel, bitrate, ip_num, os, epoch_start]
         self.sess_info = []
         # length of buffered video
         self.len_buffered = 0
@@ -41,6 +41,10 @@ class MobTVWorkFlow:
         # time cursor, pointing to the last epoch processed
         self.epoch_processed = 0
         #last_request = 0
+        # epoch of stuck for the last time
+        self.epoch_last_stuck = 0
+        # epoch of revive from stuck state for the last time
+        self.epoch_last_resume = 0
         self.is_init_buf = True
         self.is_first = True
 
@@ -69,6 +73,8 @@ class MobTVWorkFlow:
             self.len_playback = 0
             self.num_stuck = 0
             self.num_seg_play = 0
+            self.epoch_last_stuck = None
+            self.epoch_last_resume = None
 
         if self.status == MobTVWorkFlow.S_PLAY:
             self.len_buffered -= t - self.epoch_processed
@@ -80,6 +86,8 @@ class MobTVWorkFlow:
                 self.epoch_processed = t - (-self.len_buffered)
 
                 self.status = MobTVWorkFlow.S_BUF
+                self.epoch_last_stuck = self.epoch_processed
+                
                 self.is_first = True
                 self.len_buffered = 0
                 if self.NOT_CHECK_PAUSE or d > self.SEGLEN or r - self.epoch_processed < 0.5 * self.SEGLEN:
@@ -100,6 +108,7 @@ class MobTVWorkFlow:
                     self.is_first = False
             if self.len_buffered >= self.SEGLEN * self.BUF_THRES:
                 self.status = MobTVWorkFlow.S_PLAY
+                self.epoch_last_resume = t
                 self.is_init_buf = False
 
         self.seg_down_time.append(d)
@@ -132,4 +141,6 @@ class MobTVWorkFlow:
                 sum(self.seg_down_time) / num_seg,
                 self.num_stuck,
                 self.len_freezing,
-                self.len_playback]
+                self.len_playback,
+                self.epoch_last_stuck,
+                self.epoch_last_resume]
