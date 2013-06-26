@@ -93,6 +93,7 @@ def main():
     sys.stderr.write('buffer_threshold: %d\n' % BUF_THRES)
 
     results = {}
+    wr = csv.writer(freeze_file, delimiter='\t')
     for line in fileReader(infile):
         s = line[10], line[9]
         if s not in results:
@@ -100,7 +101,7 @@ def main():
         # epoch_stuck is -1 if there is no stuck
         epoch_stuck = results[s].append(line)
         if epoch_stuck > 0:
-            freeze_file.write('%s\t%d\t%f\n' % (line[10], line[9], epoch_stuck))
+            wr.writerow((line[10], line[9], epoch_stuck,))
     wr = csv.writer(outfile, delimiter='\t')
     for sess in results:
         wr.writerow(results[sess].stat())
