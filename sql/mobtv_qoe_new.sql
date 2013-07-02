@@ -43,7 +43,7 @@ CREATE TABLE `seg_log` (
   `bitrate` enum('64k','128k','256k','512k','900k') DEFAULT NULL,
   `conn_seq` int(10) unsigned DEFAULT NULL,
   `serv_name` enum('68-168-103-139.phx.dedicated.codero.com','dop-tel-fj-pt-001','dop-tel-fj-pt-002','dop-tel-gd-st-003','dop-tel-gd-st-004','dop-tel-gd-zh-002','dop-tel-gd-zh-003','dop-tel-hb-xf-002','dop-tel-hn-sy-003','dop-tel-hn-sy-004','dop-tel-js-nt-001','dop-tel-js-nt-002','dop-tel-jx-nc-002','dop-tel-jx-nc-003','dop-tel-sc-ms-001','dop-tel-sc-ms-002','dop-tel-zj-nb-002','dop-tel-zj-nb-003','dop-uni-he-ly-001','dop-uni-he-ly-002','dop-uni-nm-tl-002','dop-uni-nm-tl-003','dop-uni-sd-zb-001','dop-uni-sd-zb-002','dop-uni-sx-ty-003','dop-uni-sx-ty-004') DEFAULT NULL,
-  `os` enum('an','ios') DEFAULT NULL,
+  `os` enum('an','ios-small','ios-large') DEFAULT NULL,
   KEY `idx_arr` (`arr_time`),
   KEY `idx_sess` (`serv_name`,`conn_seq`),
   KEY `idx_down` (`down_time`)
@@ -59,7 +59,7 @@ CREATE TABLE `sess_qoe` (
   `channel` varchar(12) DEFAULT NULL,
   `bitrate` enum('64k','128k','256k','512k','900k') DEFAULT NULL,
   `ip_num` int(10) unsigned DEFAULT NULL,
-  `os` enum('an','ios') DEFAULT NULL,
+  `os` enum('an','ios-small','ios-large') DEFAULT NULL,
   `epoch_start` double DEFAULT NULL,
   `epoch_end` double DEFAULT NULL,
   `total_seg` int(10) unsigned DEFAULT NULL,
