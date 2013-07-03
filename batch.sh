@@ -1,8 +1,10 @@
 #!/bin/sh
 ### automatic processing of data
+### Usage: ./batch.sh <file_list> <db_name>
 PIPE=/tmp/tmp_pipe
 TMP_DAT=temp.gz
-DB_NAME=mobtv_qoe_new
+#DB_NAME=mobtv_qoe_new
+DB_NAME=$2
 #SEG_FILE_LIST=files.lst
 SEG_FILE_LIST=$1
 
