@@ -3,7 +3,8 @@
 PIPE=/tmp/tmp_pipe
 TMP_DAT=temp.gz
 DB_NAME=mobtv_qoe_new
-SEG_FILE_LIST=files.lst
+#SEG_FILE_LIST=files.lst
+SEG_FILE_LIST=$1
 
 [ -e $PIPE ] && rm $PIPE
 echo Create pipe
