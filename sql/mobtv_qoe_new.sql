@@ -1,6 +1,6 @@
 /*
 SQLyog Ultimate v10.42 
-MySQL - 5.1.66-0+squeeze1 : Database - mobtv_qoe_new
+MySQL - 5.5.30 : Database - mobtv_qoe_new
 *********************************************************************
 */
 
@@ -37,7 +37,7 @@ CREATE TABLE `seg_log` (
   `ip_num` int(10) unsigned DEFAULT NULL,
   `port` smallint(5) unsigned DEFAULT NULL,
   `file_size` int(10) unsigned DEFAULT NULL,
-  `channel` varchar(12) DEFAULT NULL,
+  `channel` varchar(16) DEFAULT NULL,
   `http_code` smallint(5) unsigned DEFAULT NULL,
   `seg_seq` int(10) unsigned DEFAULT NULL,
   `bitrate` enum('64k','128k','256k','512k','900k') DEFAULT NULL,
@@ -56,7 +56,7 @@ DROP TABLE IF EXISTS `sess_qoe`;
 CREATE TABLE `sess_qoe` (
   `serv_name` enum('68-168-103-139.phx.dedicated.codero.com','dop-tel-fj-pt-001','dop-tel-fj-pt-002','dop-tel-gd-st-003','dop-tel-gd-st-004','dop-tel-gd-zh-002','dop-tel-gd-zh-003','dop-tel-hb-xf-002','dop-tel-hn-sy-003','dop-tel-hn-sy-004','dop-tel-js-nt-001','dop-tel-js-nt-002','dop-tel-jx-nc-002','dop-tel-jx-nc-003','dop-tel-sc-ms-001','dop-tel-sc-ms-002','dop-tel-zj-nb-002','dop-tel-zj-nb-003','dop-uni-he-ly-001','dop-uni-he-ly-002','dop-uni-nm-tl-002','dop-uni-nm-tl-003','dop-uni-sd-zb-001','dop-uni-sd-zb-002','dop-uni-sx-ty-003','dop-uni-sx-ty-004') NOT NULL DEFAULT '68-168-103-139.phx.dedicated.codero.com',
   `conn_seq` int(10) unsigned NOT NULL,
-  `channel` varchar(12) DEFAULT NULL,
+  `channel` varchar(16) DEFAULT NULL,
   `bitrate` enum('64k','128k','256k','512k','900k') DEFAULT NULL,
   `ip_num` int(10) unsigned DEFAULT NULL,
   `os` enum('an','ios-small','ios-large') DEFAULT NULL,
@@ -72,6 +72,20 @@ CREATE TABLE `sess_qoe` (
   `last_resume` double DEFAULT NULL,
   PRIMARY KEY (`serv_name`,`conn_seq`),
   KEY `idx_start` (`epoch_start`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+/*Table structure for table `state_log` */
+
+DROP TABLE IF EXISTS `state_log`;
+
+CREATE TABLE `state_log` (
+  `serv_name` enum('68-168-103-139.phx.dedicated.codero.com','dop-tel-fj-pt-001','dop-tel-fj-pt-002','dop-tel-gd-st-003','dop-tel-gd-st-004','dop-tel-gd-zh-002','dop-tel-gd-zh-003','dop-tel-hb-xf-002','dop-tel-hn-sy-003','dop-tel-hn-sy-004','dop-tel-js-nt-001','dop-tel-js-nt-002','dop-tel-jx-nc-002','dop-tel-jx-nc-003','dop-tel-sc-ms-001','dop-tel-sc-ms-002','dop-tel-zj-nb-002','dop-tel-zj-nb-003','dop-uni-he-ly-001','dop-uni-he-ly-002','dop-uni-nm-tl-002','dop-uni-nm-tl-003','dop-uni-sd-zb-001','dop-uni-sd-zb-002','dop-uni-sx-ty-003','dop-uni-sx-ty-004') DEFAULT NULL,
+  `conn_seq` int(10) unsigned DEFAULT NULL,
+  `state` enum('buf','play','stop') DEFAULT NULL,
+  `transition_epoch` double DEFAULT NULL,
+  `stuck_seq` int(10) unsigned DEFAULT NULL,
+  KEY `idx_sess` (`serv_name`,`conn_seq`),
+  KEY `idx_time` (`transition_epoch`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 /*Table structure for table `stuck_log` */
