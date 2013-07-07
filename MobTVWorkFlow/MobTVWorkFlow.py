@@ -51,7 +51,14 @@ class MobTVWorkFlow:
     #----------------------------------------------------------------------
     def append(self, line):
         """append new record"""
-        epoch_stuck = -1
+        #epoch_stuck = -1
+        # indicate new state if state transition happens
+        new_state = None
+        # time of state transition
+        epoch_state_change = None
+        # whether the segment should be excluded from counting
+        # is_exlude = True if the segment is non-first buffering segment of an interruption
+        is_exclude = False
         # epoch of segment arrival
         t = line[0]
         # segment download time
@@ -64,6 +71,8 @@ class MobTVWorkFlow:
             self.sess_info = [line[5], line[8], line[2], line[11], r]
             self.status = MobTVWorkFlow.S_BUF
             self.is_init_buf = True
+            new_state = MobTVWorkFlow.S_BUF
+            epoch_state_change = r
             # for the new session, set time cursor to the epoch of requesting
             # the first chunk, the beginning of the whole session
             self.epoch_processed = r
@@ -87,14 +96,17 @@ class MobTVWorkFlow:
 
                 self.status = MobTVWorkFlow.S_BUF
                 self.epoch_last_stuck = self.epoch_processed
-                
+                new_state = MobTVWorkFlow.S_BUF
+                epoch_state_change = self.epoch_processed
+
                 self.is_first = True
                 self.len_buffered = 0
-                if self.NOT_CHECK_PAUSE or d > self.SEGLEN or r - self.epoch_processed < 0.5 * self.SEGLEN:
-                    # check whether caused by download timeout
-                    # the user may also pause the video by himself
-                    epoch_stuck = self.epoch_processed
-                    self.num_stuck += 1
+                #if self.NOT_CHECK_PAUSE or d > self.SEGLEN or r - self.epoch_processed < 0.5 * self.SEGLEN:
+                    ## check whether caused by download timeout
+                    ## the user may also pause the video by himself
+                    #epoch_stuck = self.epoch_processed
+                    #self.num_stuck += 1
+                self.num_stuck += 1
             else:
                 self.len_playback += t - self.epoch_processed
             self.num_seg_play += 1
@@ -102,13 +114,18 @@ class MobTVWorkFlow:
         self.len_buffered += self.SEGLEN
         if self.status == MobTVWorkFlow.S_BUF:
             #len_freezing += t - epoch_processed
-            if not self.is_init_buf:
-                if self.is_first:
+            if self.is_first:
+                if not self.is_init_buf:
                     self.len_freezing += min(d, t - self.epoch_processed)
-                    self.is_first = False
+                self.is_first = False
+            else:
+                is_exclude = True
+
             if self.len_buffered >= self.SEGLEN * self.BUF_THRES:
                 self.status = MobTVWorkFlow.S_PLAY
-                if not self.is_first:
+                new_state = MobTVWorkFlow.S_PLAY
+                epoch_state_change = self.epoch_processed
+                if not self.is_init_buf:
                     self.epoch_last_resume = t
                 else:
                     self.is_init_buf = False
@@ -116,7 +133,9 @@ class MobTVWorkFlow:
         self.seg_down_time.append(d)
         self.epoch_processed = t
         #last_request = r
-        return epoch_stuck
+        # return is_exlude, new_state, epoch_state_change
+        return is_exclude, new_state, epoch_state_change, self.num_stuck
+        # return epoch_stuck
 
     def getos(self, ua):
         """Get OS type from user agent string
@@ -126,7 +145,10 @@ class MobTVWorkFlow:
 
         """
         if ua.find('Apple') >= 0:
-            return 'ios'
+            if ua.find('iPad') >= 0:
+                return 'ios-large'
+            else:
+                return 'ios-small'
         else:
             return 'an'
 

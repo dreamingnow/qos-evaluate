@@ -71,10 +71,12 @@ def main():
     else:
         if options.gzip:
             outfile = gzip.open(options.output_filename, 'wb')
-            freeze_file = gzip.open('st_' + options.output_filename, 'wb')
+            status_file = gzip.open('st_' + options.output_filename, 'wb')
+            exclude_file = gzip.open('ex_' + options.output_filename, 'wb')
         else:
             outfile = open(options.output_filename, 'wb')
-            freeze_file = open('st_' + options.output_filename, 'wb')
+            status_file = open('st_' + options.output_filename, 'wb')
+            exclude_file = open('ex_' + options.output_filename, 'wb')
         desc_file = open(options.output_filename + '.desc', 'wb')
         desc_file.write('not_check_pause=%s\n' % NOT_CHECK_PAUSE)
         desc_file.write('segment_length=%.2f\n' % SEGLEN)
@@ -93,15 +95,25 @@ def main():
     sys.stderr.write('buffer_threshold: %d\n' % BUF_THRES)
 
     results = {}
-    wr = csv.writer(freeze_file, delimiter='\t')
+    st_wr = csv.writer(status_file, delimiter='\t')
+    exc_wr = csv.writer(exclude_file, delimiter='\t')
+    state_str = {0: 'buf', 1: 'play', 2: 'stop'}
     for line in fileReader(infile):
         s = line[10], line[9]
         if s not in results:
             results[s] = MobTVWorkFlow(NOT_CHECK_PAUSE, SEGLEN, BUF_THRES)
-        # epoch_stuck is -1 if there is no stuck
-        epoch_stuck = results[s].append(line)
-        if epoch_stuck > 0:
-            wr.writerow((line[10], line[9], epoch_stuck,))
+        # # epoch_stuck is -1 if there is no stuck
+        # epoch_stuck = results[s].append(line)
+        # if epoch_stuck > 0:
+        #     wr.writerow((line[10], line[9], epoch_stuck,))
+        is_exclude, new_state, epoch_state_chage, num_stuck = results[s].append(line)
+        if is_exclude:
+            # write to exclude seg list
+            exc_wr.writerow((line[10], line[9], line[0],))
+        if new_state is not None:
+            # write to status_log
+            st_wr.writerow((line[10], line[9], state_str[new_state], epoch_state_chage, num_stuck))
+
     wr = csv.writer(outfile, delimiter='\t')
     for sess in results:
         wr.writerow(results[sess].stat())

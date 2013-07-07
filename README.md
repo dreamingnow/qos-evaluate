@@ -42,7 +42,7 @@ The input could from a preprocessed file or db queries.  The output file should 
 Output
 ------
 
-The output of the `main.py` contains:
+### The output of the `main.py` contains:
 
 1. server
 2. connection sequence
@@ -63,11 +63,25 @@ The output of the `main.py` contains:
 
 Each line represents a session.
 
-Another output file logs stuch epochs, each line contains:
+### The output file with `st_` prefix
+
+The `st_` file logs the state transitions of sessions.
+Each record contains:
 
 1. server
 2. connection sequence
-3. stuck epoch
+3. new state
+4. transition epoch
+5. stuck count of the session at that time
+
+### The output file with `ex_` prefix
+
+The `ex_` file logs the segments that should be excluded when estimating the
+stuck probability.  Each record contains:
+
+1. server
+2. connection sequence
+3. arrival epoch
 
 DB related scripts
 ------------------
