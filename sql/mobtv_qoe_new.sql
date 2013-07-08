@@ -1,6 +1,6 @@
 /*
 SQLyog Ultimate v10.42 
-MySQL - 5.5.30 : Database - mobtv_qoe_new
+MySQL - 5.1.66-0+squeeze1 : Database - mobtv_qoe_20130527
 *********************************************************************
 */
 
@@ -12,10 +12,6 @@ MySQL - 5.5.30 : Database - mobtv_qoe_new
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`mobtv_qoe_new` /*!40100 DEFAULT CHARACTER SET utf8 */;
-
-USE `mobtv_qoe_new`;
-
 /*Table structure for table `est_slot_seg` */
 
 DROP TABLE IF EXISTS `est_slot_seg`;
@@ -25,6 +21,18 @@ CREATE TABLE `est_slot_seg` (
   `time_slot` int(10) unsigned NOT NULL,
   `est_seg` float NOT NULL,
   PRIMARY KEY (`os`,`time_slot`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+/*Table structure for table `exclude_log` */
+
+DROP TABLE IF EXISTS `exclude_log`;
+
+CREATE TABLE `exclude_log` (
+  `serv_name` enum('68-168-103-139.phx.dedicated.codero.com','dop-tel-fj-pt-001','dop-tel-fj-pt-002','dop-tel-gd-st-003','dop-tel-gd-st-004','dop-tel-gd-zh-002','dop-tel-gd-zh-003','dop-tel-hb-xf-002','dop-tel-hn-sy-003','dop-tel-hn-sy-004','dop-tel-js-nt-001','dop-tel-js-nt-002','dop-tel-jx-nc-002','dop-tel-jx-nc-003','dop-tel-sc-ms-001','dop-tel-sc-ms-002','dop-tel-zj-nb-002','dop-tel-zj-nb-003','dop-uni-he-ly-001','dop-uni-he-ly-002','dop-uni-nm-tl-002','dop-uni-nm-tl-003','dop-uni-sd-zb-001','dop-uni-sd-zb-002','dop-uni-sx-ty-003','dop-uni-sx-ty-004') DEFAULT NULL,
+  `conn_seq` int(10) unsigned DEFAULT NULL,
+  `arr_time` double DEFAULT NULL,
+  KEY `idx_sess` (`serv_name`,`conn_seq`),
+  KEY `idx_time` (`arr_time`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 /*Table structure for table `seg_log` */
@@ -86,18 +94,6 @@ CREATE TABLE `state_log` (
   `stuck_seq` int(10) unsigned DEFAULT NULL,
   KEY `idx_sess` (`serv_name`,`conn_seq`),
   KEY `idx_time` (`transition_epoch`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-/*Table structure for table `stuck_log` */
-
-DROP TABLE IF EXISTS `stuck_log`;
-
-CREATE TABLE `stuck_log` (
-  `serv_name` enum('68-168-103-139.phx.dedicated.codero.com','dop-tel-fj-pt-001','dop-tel-fj-pt-002','dop-tel-gd-st-003','dop-tel-gd-st-004','dop-tel-gd-zh-002','dop-tel-gd-zh-003','dop-tel-hb-xf-002','dop-tel-hn-sy-003','dop-tel-hn-sy-004','dop-tel-js-nt-001','dop-tel-js-nt-002','dop-tel-jx-nc-002','dop-tel-jx-nc-003','dop-tel-sc-ms-001','dop-tel-sc-ms-002','dop-tel-zj-nb-002','dop-tel-zj-nb-003','dop-uni-he-ly-001','dop-uni-he-ly-002','dop-uni-nm-tl-002','dop-uni-nm-tl-003','dop-uni-sd-zb-001','dop-uni-sd-zb-002','dop-uni-sx-ty-003','dop-uni-sx-ty-004') DEFAULT NULL,
-  `conn_seq` int(10) unsigned DEFAULT NULL,
-  `stuck_epoch` double DEFAULT NULL,
-  KEY `idx_sess` (`serv_name`,`conn_seq`),
-  KEY `idx_time` (`stuck_epoch`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
