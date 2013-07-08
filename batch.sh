@@ -21,8 +21,8 @@ echo Generating QoE data from raw data
 ./run_qoe_db.sh $DB_NAME $TMP_DAT
 echo Save session data to DB
 ./importgztab.sh $TMP_DAT $DB_NAME sess_qoe $PIPE
-echo Save stuck epochs to DB
-./importgztab.sh st_$TMP_DAT $DB_NAME stuck_log $PIPE
+echo Save state transitions to DB
+./importgztab.sh st_$TMP_DAT $DB_NAME state_log $PIPE
 echo Clean
 rm $PIPE $TMP_DAT st_$TMP_DAT
 echo Finish \\a
