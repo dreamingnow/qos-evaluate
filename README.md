@@ -74,6 +74,8 @@ Each record contains:
 4. transition epoch
 5. stuck count of the session at that time
 
+Stuck count 0 means the initial buffer.
+
 ### The output file with `ex_` prefix
 
 The `ex_` file logs the segments that should be excluded when estimating the
